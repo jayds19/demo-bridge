@@ -4,28 +4,28 @@ const { LedgerSdk } = ledgerSdk;
 
 // Populate this object with bank keys you have created previusly.
 const bankKeyPair = {
+  format: "ed25519-raw",
   public: "c+FFbeXgBA3OdRK0QfuXnSochdXHFZL91peUquocV/8=",
   secret: "7hPsFB//C9/bStiKqzwcGJMpHBe0zyCa+3XZMZTVr90=",
-  format: "ed25519-raw",
 };
 
 // Populate with Ledger public key data.
 export const ledgerSigner = {
   format: "ed25519-raw",
-  public: "XhjxNOor+jocpF7YrMTiNdeNbwgqvG3EicLO61cyfZU=",
+  public: "9+anQm7Kv7SKF7ga5jOaTOqhOcH3ZH+ZUBh99X1JqNs=",
 };
 
 // Configure the Ledger SDK.
 const ledger = new LedgerSdk({
   // This is the ledger instance we are going to connect to.
-  ledger: "demo",
+  ledger: "cardnet",
   server: "https://ldg-stg.one/api/v2",
   secure: {
     aud: "demo",
     iss: "acap",
     keyPair: bankKeyPair,
     sub: bankKeyPair.public,
-    export: 3600,
+    exp: 3600,
   },
 });
 
@@ -55,5 +55,5 @@ export async function notifyLedger(entry, action, notifyStates) {
       },
     ])
     .send();
-  console.log(`SENT signatura to Ledger\n${JSON.stringify((custom, null, 2))}`);
+  console.log(`SENT signature to Ledger\n${JSON.stringify(custom, null, 2)}`);
 }

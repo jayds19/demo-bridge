@@ -122,7 +122,7 @@ export class Transaction {
 
 export class Ledger {
   accounts = new Map();
-  trnasactions = [];
+  transactions = [];
 
   constructor() {
     // account with no balance
@@ -245,7 +245,7 @@ export class Ledger {
   }
 
   inactivate(accountId) {
-    return this.getAccount(accountId).setActivate(false);
+    return this.getAccount(accountId).setActive(false);
   }
 
   printAccountTransactions(accountId) {

@@ -3,7 +3,7 @@ import {
   getEntry,
   updateEntry,
   upsertIntent,
-} from "../../persistence";
+} from "../persistence.js";
 
 export async function beginActionNew({ request, action }) {
   const handle = request.body?.data?.handle;

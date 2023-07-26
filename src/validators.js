@@ -3,7 +3,7 @@ const BANK_WALLET = "acap";
 const USD_FACTOR = 100;
 // Address regex used for validation and component extraction
 const ADDRESS_REGEX =
-  /˄(((?<schema>[a-zA-Z0-9_\-+.]+):)?(?<handle>[a-zA-Z0-9_\-+.]+))(@(?<parent>[a-zA-Z0-9)\-+.]+))?$/;
+  /^(((?<schema>[a-zA-Z0-9_\-+.]+):)?(?<handle>[a-zA-Z0-9_\-+.]+))(@(?<parent>[a-zA-Z0-9_\-+.]+))?$/;
 
 export function validateEntity(entity, signer) {}
 
@@ -44,11 +44,13 @@ export function extractAndValidateAmount(rawAmount) {
 }
 
 export function extractAndValidateSymbol(symbol) {
-  if (symbol !== "usd") {
-    throw new Error(`Symbol usd expected, got ${symbol}`);
+  const { handle } = symbol;
+
+  if (handle !== "usd") {
+    throw new Error(`Symbol usd expected, got ${handle}`);
   }
 
-  return symbol;
+  return handle;
 }
 
 export function validateAction(action, expected) {

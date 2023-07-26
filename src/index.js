@@ -2,7 +2,7 @@ import express from "express";
 
 import { logRequest } from "./middleware/logging.js";
 import { handleError, asyncErrorWrapper } from "./middleware/errors.js";
-import { prepareCredit } from "./handlers/handlers.js";
+import { prepareCredit } from "./handlers/credits.js";
 
 const app = express();
 
@@ -16,7 +16,7 @@ app.get("/", (req, res) => {
   res.send(`${bankName} is running!`);
 });
 
-app.post("/v2/credits", asyncErrorWrapper(prepareCredit));
+app.post("/credits", asyncErrorWrapper(prepareCredit));
 
 app.use(handleError);
 
