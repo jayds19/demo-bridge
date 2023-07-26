@@ -30,4 +30,48 @@ export async function prepareCredit(req, res) {
   }
 }
 
-export function processPrepareCredit(entry) {}
+export async function processPrepareCredit(entry) {
+  const action = entry.actions[entry.processingAction];
+
+  try {
+    // Parse data from the Entry and validate it.
+    validateEntity(
+      { hash: entry.hash, data: entry.data, meta: entry.meta },
+      ledgerSigner
+    );
+    validateEntity(entry.data?.intent);
+    validateAction(action.action, entry.processingAction);
+
+    const { address, symbol, amount } = extractAndValidateData({
+      entry,
+      schema: "credit",
+    });
+
+    // Save extracted data into Entry, we will need this for other Actions.
+    entry.schema = "credit";
+    entry.account = address.account;
+    entry.symbol = symbol;
+    entry.amount = amount;
+
+    // Save Entry.
+    await updateEntry(entry);
+    // Save Intent from Entry.
+    await saveIntent(entry.data.intent);
+
+    // Processing prepeare Action for Credit Entry in the core is simple and
+    // only checks if the account exists and is active. If something is wrong,
+    // an Error will be thrown, and we will catch it later.
+    const coreAccount = core.getAccount(Number(entry.account));
+    coreAccount.assertIsActive();
+
+    action.state = "prepared";
+  } catch (error) {
+    console.log(error);
+    action.state = "failed";
+    action.error = {
+      reason: "bridge.unexpected-error",
+      detail: error.message,
+      failId: undefined,
+    };
+  }
+}
