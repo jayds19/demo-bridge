@@ -145,6 +145,10 @@ export class Ledger {
     this.credit(4, 200);
     this.debit(4, 200);
     this.inactivate(4);
+
+    // Account for payment test
+    this.accounts.set(5, new Account(5));
+    this.credit(5, 200);
   }
 
   getAccount(accountId) {

@@ -45,7 +45,7 @@ export async function beginActionNew({ request, action }) {
 
   const processingStart = new Date();
 
-  entry.previusState = entry.state;
+  entry.previousState = entry.state;
   entry.state = `processing-${action}`;
   entry.actions[action] = {
     hash: undefined,
@@ -88,4 +88,63 @@ export async function endAction(entry) {
 
 export async function saveIntent(intent) {
   await upsertIntent({ handle: intent?.data?.handle, ...intent });
+}
+
+export async function beginActionExisting({ request, action, previousStates }) {
+  const handle = request.body?.data?.handle;
+
+  if (!handle) {
+    throw new Error("Invalid handle");
+  }
+
+  if (request.params.handle && request.params.handle !== handle) {
+    throw new Error("Request parameter handle not equal to entry handle.");
+  }
+
+  let entry = await getEntry(handle);
+
+  if (!entry) {
+    throw new Error("Entry does not exist.");
+  }
+
+  const alreadyRunning = !!entry.processingAction;
+
+  if (alreadyRunning) {
+    if (entry.processingAction !== request.body?.action) {
+      throw new Error("Already processing another action");
+    } else {
+      return { alreadyRunning: true, entry };
+    }
+  }
+
+  if (!previousStates.includes(entry.state)) {
+    throw new Error(
+      `Invalid previus state (${entry.state}) for action ${action}.`
+    );
+  }
+
+  const processingStart = new Date();
+
+  entry.previusState = entry.state;
+  entry.state = `processing-${action}`;
+  entry.actions[action] = {
+    hash: request.body?.hash,
+    data: request.body?.data,
+    meta: request.body?.meta,
+    action: request.body?.data?.action,
+    state: "processing",
+    codeId: undefined,
+    error: {
+      reason: undefined,
+      detail: undefined,
+      failId: undefined,
+    },
+    processingStart,
+    processingEnd: null,
+  };
+
+  entry.processingAction = action;
+  entry.processingStart = processingStart;
+  entry = await updateEntry(entry);
+  return { alreadyRunning: false, entry };
 }
