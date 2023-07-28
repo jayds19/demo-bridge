@@ -2,7 +2,7 @@ import ledgerSdk from "@minka/ledger-sdk";
 
 const { LedgerSdk } = ledgerSdk;
 
-// Populate this object with bank keys you have created previusly.
+// Populate this object with bank keys you have created previously.
 const bankKeyPair = {
   format: "ed25519-raw",
   public: "c+FFbeXgBA3OdRK0QfuXnSochdXHFZL91peUquocV/8=",
@@ -45,6 +45,7 @@ export async function notifyLedger(entry, action, notifyStates) {
     detail: notifyAction.error.detail,
     failId: notifyAction.error.failId,
   };
+  console.log(`>>> ENTRY TO SEND: ${JSON.stringify(entry, null, 2)}`);
   const ledgerResponse = await ledger.intent
     .from(entry.data.intent)
     .hash()
