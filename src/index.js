@@ -2,8 +2,12 @@ import express from "express";
 
 import { logRequest } from "./middleware/logging.js";
 import { handleError, asyncErrorWrapper } from "./middleware/errors.js";
-import { prepareCredit, commitCredit } from "./handlers/credits.js";
-import { prepareDebit, commitDebit } from "./handlers/debits.js";
+import {
+  prepareCredit,
+  commitCredit,
+  abortCredit,
+} from "./handlers/credits.js";
+import { prepareDebit, commitDebit, abortDebit } from "./handlers/debits.js";
 
 const app = express();
 
@@ -19,8 +23,10 @@ app.get("/", (req, res) => {
 
 app.post("/credits", asyncErrorWrapper(prepareCredit));
 app.post("/credits/:handle/commit", asyncErrorWrapper(commitCredit));
+app.post("/credits/:handle/abort", asyncErrorWrapper(abortCredit));
 app.post("/debits", asyncErrorWrapper(prepareDebit));
 app.post("/debits/:handle/commit", asyncErrorWrapper(commitDebit));
+app.post("/debits/:handle/abort", asyncErrorWrapper(abortDebit));
 
 app.use(handleError);
 

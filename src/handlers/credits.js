@@ -4,7 +4,7 @@ import {
   saveIntent,
   beginActionExisting,
 } from "./common.js";
-import { getEntry, updateEntry } from "../persistence.js";
+import { updateEntry } from "../persistence.js";
 import { ledgerSigner, notifyLedger } from "../ledger.js";
 import {
   extractAndValidateData,
@@ -21,8 +21,6 @@ export async function prepareCredit(req, res) {
     request: req,
     action,
   });
-
-  //console.log(`>>> BEGIN ACTION NEW: ${JSON.stringify(entry, null, 2)}`);
 
   // The Entry is already saved, so we can return 202 Accepted to the Ledger
   // so that it stops redelivering the Action.
@@ -124,6 +122,45 @@ async function processCommitCredit(entry) {
     }
 
     action.state = "committed";
+  } catch (error) {
+    console.log(error);
+    action.state = "error";
+    action.error = {
+      reason: "bridge.unexpected-error",
+      detail: error.message,
+      failId: undefined,
+    };
+  }
+}
+
+export async function abortCredit(req, res) {
+  const action = "abort";
+  let { alreadyRunning, entry } = await beginActionExisting({
+    request: req,
+    action,
+    previousStates: ["prepared", "failed"],
+  });
+
+  res.sendStatus(202);
+
+  if (!alreadyRunning) {
+    await processAbortCredit(entry);
+    await endAction(entry);
+  }
+
+  await notifyLedger(entry, action, ["aborted"]);
+}
+
+async function processAbortCredit(entry) {
+  const action = entry.actions[entry.processingAction];
+
+  try {
+    validateEntity(
+      { hash: action.hash, data: action.data, meta: action.meta },
+      ledgerSigner
+    );
+    validateAction(action.action, entry.processingAction);
+    action.state = "aborted";
   } catch (error) {
     console.log(error);
     action.state = "error";

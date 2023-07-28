@@ -75,7 +75,7 @@ export async function endAction(entry) {
   const currentAction = entry.actions[entry.processingAction];
 
   // Mark the Entry processing as completed and save the result.
-  entry.previusState = entry.state;
+  entry.previousState = entry.state;
   entry.state = currentAction.state;
   entry.processingAction = null;
   entry.processingStart = null;
@@ -119,13 +119,13 @@ export async function beginActionExisting({ request, action, previousStates }) {
 
   if (!previousStates.includes(entry.state)) {
     throw new Error(
-      `Invalid previus state (${entry.state}) for action ${action}.`
+      `Invalid previous state (${entry.state}) for action ${action}.`
     );
   }
 
   const processingStart = new Date();
 
-  entry.previusState = entry.state;
+  entry.previousState = entry.state;
   entry.state = `processing-${action}`;
   entry.actions[action] = {
     hash: request.body?.hash,

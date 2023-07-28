@@ -98,7 +98,7 @@ export class Account {
 
   assertIsActive() {
     if (!this.active) {
-      throw new InactiveAccountError(`Account ${this.id} is active`);
+      throw new InactiveAccountError(`Account ${this.id} is inactive`);
     }
   }
 
