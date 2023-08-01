@@ -58,3 +58,42 @@ export async function notifyLedger(entry, action, notifyStates) {
     .send();
   console.log(`SENT signature to Ledger\n${JSON.stringify(custom, null, 2)}`);
 }
+
+const getOwnerAccessRules = (publicKey) => {
+  return [
+    {
+      action: "any",
+      signer: {
+        public: publicKey,
+      },
+    },
+    {
+      action: "read",
+      bearer: {
+        $signer: {
+          public: publicKey,
+        },
+      },
+    },
+  ];
+};
+
+export async function createAndSendIntentAction() {
+  const claim = {
+    action: "issue",
+    target: "tesla",
+    symbol: "usd",
+    amount: 10000, // 100.00
+  };
+
+  await ledger.intent
+    .init()
+    .data({
+      handle: ledger.handle.unique(),
+      claims: [claim],
+      access: getOwnerAccessRules(bankKeyPair.public),
+    })
+    .hash()
+    .sign([{ keyPair }])
+    .send();
+}
