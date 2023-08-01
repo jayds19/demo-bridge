@@ -8,6 +8,7 @@ import {
   abortCredit,
 } from "./handlers/credits.js";
 import { prepareDebit, commitDebit, abortDebit } from "./handlers/debits.js";
+import { updateIntent } from "./handlers/intents.js";
 
 const app = express();
 
@@ -27,6 +28,7 @@ app.post("/credits/:handle/abort", asyncErrorWrapper(abortCredit));
 app.post("/debits", asyncErrorWrapper(prepareDebit));
 app.post("/debits/:handle/commit", asyncErrorWrapper(commitDebit));
 app.post("/debits/:handle/abort", asyncErrorWrapper(abortDebit));
+app.post("/intents/:handle", asyncErrorWrapper(updateIntent));
 
 app.use(handleError);
 
