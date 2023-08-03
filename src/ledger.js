@@ -78,12 +78,13 @@ const getOwnerAccessRules = (publicKey) => {
   ];
 };
 
-export async function createAndSendIntentAction() {
+export async function sendIntentTransfer() {
   const claim = {
-    action: "issue",
-    target: "tesla",
+    action: "transfer",
+    source: "account:1234@tesla",
+    target: "account:000000000001@acap",
     symbol: "usd",
-    amount: 10000, // 100.00
+    amount: 1000, // 100.00
   };
 
   await ledger.intent
@@ -94,6 +95,35 @@ export async function createAndSendIntentAction() {
       access: getOwnerAccessRules(bankKeyPair.public),
     })
     .hash()
-    .sign([{ keyPair }])
+    .sign([{ keyPair: bankKeyPair }])
+    .send();
+}
+
+// Reading wallet informatión
+export async function addWalletRoute(
+  phoneWalletHandle = "tel:8299330001",
+  accountHandle = "account:1234@tesla"
+) {
+  const { wallet, response } = await ledger.wallet.read(phoneWalletHandle);
+
+  console.log(`>>> WALLET: ${JSON.stringify(wallet, null, 2)}`);
+  console.log(`>>> RESPONSE: ${JSON.stringify(response.data, null, 2)}`);
+
+  const routes = wallet.routes ?? [];
+  let route = routes.find((route) => route.target === accountHandle);
+  if (!route) {
+    route = {
+      action: "forward",
+      target: accountHandle,
+    };
+
+    routes.push(route);
+  }
+
+  await ledger.wallet
+    .from(response.data)
+    .data({ routes })
+    .hash()
+    .sign([{ keyPair: bankKeyPair }])
     .send();
 }
